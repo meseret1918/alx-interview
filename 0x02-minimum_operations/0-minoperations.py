@@ -34,12 +34,3 @@ def minOperations(n):
             factor += 1
 
     return operations
-
-
-if __name__ == "__main__":
-    # Test cases
-    n = 4
-    print("Min # of operations to reach {} characters: {}".format(n, minOperations(n)))
-
-    n = 12
-    print("Min # of operations to reach {} characters: {}".format(n, minOperations(n)))
