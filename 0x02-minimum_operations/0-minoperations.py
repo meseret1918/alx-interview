@@ -1,30 +1,28 @@
 #!/usr/bin/python3
 
-"""
-    Determine the minimum operations for a given character count.
-"""
+""" Has a single character H with two operations: Copy All and Paste
+    Give number n, write a method that calculates operations to result
+    in exactly n H.
+    Prototype: def minOperations(n)
+    Return an integer
+    if n is impossible to achieve, return 0
+    """
 
 
 def minOperations(n):
     """
-     Function that calculates fewest number of operations
-        needed to give a result of exactly n H characters in a file
-        args: n: characters of numbers to be displayed
-        return:
-               min number of  operations
-
+    Single character H
+    Fewest number of operations
     """
 
-    init = 1
-    prompt = 0
-    counter = 0
-    while init < n:
-        remainder = n - init
-        if (remainder % init == 0):
-            prompt = init
-            init += prompt
-            counter += 2
+    if n <= 1:
+        return 0
+    numbr, index, operations = n, 2, 0
+
+    while numbr > 1:
+        if numbr % index == 0:
+            numbr = numbr / index
+            operations = operations + index
         else:
-            init += prompt
-            counter += 1
-    return counter
+            index += 1
+    return operations
