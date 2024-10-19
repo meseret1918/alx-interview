@@ -1,15 +1,30 @@
 #!/usr/bin/python3
+
 """
-Main file for testing
+    Determine the minimum operations for a given character count.
 """
 
-minOperations = __import__('0-minoperations').minOperations
 
-n = 4
-print("Min # of operations to reach {} char: {}".format(n, minOperations(n)))
+def minOperations(n):
+    """
+     Function that calculates fewest number of operations
+        needed to give a result of exactly n H characters in a file
+        args: n: characters of numbers to be displayed
+        return:
+               min number of  operations
 
-n = 12
-print("Min # of operations to reach {} char: {}".format(n, minOperations(n)))
+    """
 
-n = 9
-print("Min # of operations to reach {} char: {}".format(n, minOperations(n)))
+    init = 1
+    prompt = 0
+    counter = 0
+    while init < n:
+        remainder = n - init
+        if (remainder % init == 0):
+            prompt = init
+            init += prompt
+            counter += 2
+        else:
+            init += prompt
+            counter += 1
+    return counter
