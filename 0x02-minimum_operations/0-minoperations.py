@@ -7,6 +7,7 @@ to achieve exactly n 'H' characters in a text file using
 only the operations: Copy All and Paste.
 """
 
+
 def minOperations(n):
     """
     Calculate the minimum number of operations to get n 'H' characters.
@@ -22,15 +23,14 @@ def minOperations(n):
         return 0
 
     operations = 0
-    current_chars = 1
-    factor = 2
+    factor = 2  # Start checking for factors from 2
 
+    # Loop through to find the factors
     while n > 1:
-        if n % factor == 0:
-            operations += factor  # Copy and Paste actions
-            n //= factor
-            current_chars *= factor
+        if n % factor == 0:  # If factor divides n
+            operations += factor  # Count Copy and Paste actions
+            n //= factor  # Reduce n by the factor
         else:
-            factor += 1
+            factor += 1  # Check the next factor
 
-    return operations
+    return operations  # Return the total number of operations
