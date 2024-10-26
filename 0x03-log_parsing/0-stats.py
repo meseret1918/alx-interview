@@ -1,57 +1,39 @@
 #!/usr/bin/python3
+"""
+Log parsing
+"""
+
 import sys
 
+if __name__ == '__main__':
 
-def main():
-    total_size = 0
-    status_codes_count = {
-        200: 0,
-        301: 0,
-        400: 0,
-        401: 0,
-        403: 0,
-        404: 0,
-        405: 0,
-        500: 0,
-    }
-    line_count = 0
+    filesize, count = 0, 0
+    codes = ["200", "301", "400", "401", "403", "404", "405", "500"]
+    stats = {k: 0 for k in codes}
+
+    def print_stats(stats: dict, file_size: int) -> None:
+        print("File size: {:d}".format(filesize))
+        for k, v in sorted(stats.items()):
+            if v:
+                print("{}: {}".format(k, v))
 
     try:
         for line in sys.stdin:
-            # Parse the line
-            parts = line.split()
-            if len(parts) < 7:
-                continue  # skip invalid lines
-
-            # Extract the file size and status code
+            count += 1
+            data = line.split()
             try:
-                status_code = int(parts[6])
-                file_size = int(parts[7])
-            except (ValueError, IndexError):
-                continue  # skip lines that do not conform to the format
-
-            # Update metrics
-            total_size += file_size
-            if status_code in status_codes_count:
-                status_codes_count[status_code] += 1
-
-            line_count += 1
-
-            # Print statistics every 10 lines
-            if line_count % 10 == 0:
-                print_stats(total_size, status_codes_count)
-
+                status_code = data[-2]
+                if status_code in stats:
+                    stats[status_code] += 1
+            except BaseException:
+                pass
+            try:
+                filesize += int(data[-1])
+            except BaseException:
+                pass
+            if count % 10 == 0:
+                print_stats(stats, filesize)
+        print_stats(stats, filesize)
     except KeyboardInterrupt:
-        print_stats(total_size, status_codes_count)
-
-
-def print_stats(total_size, status_codes_count):
-    print(f"File size: {total_size}")
-    for code in sorted(status_codes_count.keys()):
-        count = status_codes_count[code]
-        if count > 0:
-            print(f"{code}: {count}")
-
-
-if __name__ == "__main__":
-    main()
+        print_stats(stats, filesize)
+        raise
