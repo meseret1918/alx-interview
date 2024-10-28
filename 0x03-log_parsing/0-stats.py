@@ -5,17 +5,23 @@ Script that reads from standard input and computes metrics.
 
 import sys
 
+
 def print_stats(total_size, status_counts):
     """
-    Prints the accumulated statistics including total file size and status codes count.
+    Prints the accumulated statistics including total file size and
+    status codes count.
     """
     print("File size: {}".format(total_size))
     for status in sorted(status_counts.keys()):
         if status_counts[status] > 0:
             print("{}: {}".format(status, status_counts[status]))
 
+
 total_size = 0
-status_counts = {"200": 0, "301": 0, "400": 0, "401": 0, "403": 0, "404": 0, "405": 0, "500": 0}
+status_counts = {
+    "200": 0, "301": 0, "400": 0, "401": 0,
+    "403": 0, "404": 0, "405": 0, "500": 0
+}
 line_count = 0
 
 try:
