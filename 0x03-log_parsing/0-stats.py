@@ -1,66 +1,51 @@
 #!/usr/bin/python3
 """
-Log Parsing Script
-
-This script reads HTTP request logs from stdin and computes metrics.
-It prints the total file size and counts of each HTTP status code
-after every 10 lines and upon script termination (via KeyboardInterrupt).
+Script that reads from standard input and computes metrics.
 """
 
 import sys
-import re
 
-
-def output(log):
+def print_stats(total_size, status_counts):
     """
-    Helper function to display the accumulated log statistics.
-    Prints the total file size and the frequency of each HTTP status code.
+    Prints the accumulated statistics including total file size and status codes count.
     """
-    print("File size: {}".format(log["file_size"]))
-    for code in sorted(log["code_frequency"]):
-        if log["code_frequency"][code] > 0:
-            print("{}: {}".format(code, log["code_frequency"][code]))
+    print("File size: {}".format(total_size))
+    for status in sorted(status_counts.keys()):
+        if status_counts[status] > 0:
+            print("{}: {}".format(status, status_counts[status]))
 
+total_size = 0
+status_counts = {"200": 0, "301": 0, "400": 0, "401": 0, "403": 0, "404": 0, "405": 0, "500": 0}
+line_count = 0
 
-if __name__ == "__main__":
-    # Regular expression pattern to match the log format.
-    regex = re.compile(
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} - \[\d{4}-\d{2}-\d{2} '
-        r'\d{2}:\d{2}:\d{2}\.\d+\] "GET /projects/260 HTTP/1.1" '
-        r'(\d{3}) (\d+)'  # Matches the HTTP status code and file size
-    )
+try:
+    for line in sys.stdin:
+        line_count += 1
+        parts = line.strip().split()
 
-    # Initialize counters and storage for log data.
-    line_count = 0
-    log = {
-        "file_size": 0,
-        "code_frequency": {str(code): 0 for code in [
-            200, 301, 400, 401, 403, 404, 405, 500]}
-    }
+        # Check if the line has the correct format
+        if len(parts) < 7:
+            continue
 
-    try:
-        for line in sys.stdin:
-            line = line.strip()
-            match = regex.fullmatch(line)
-            if match:
-                line_count += 1
-                code = match.group(1)
-                file_size = int(match.group(2))
+        # Get the status code and file size
+        status_code = parts[-2]
+        file_size = parts[-1]
 
-                # Update total file size
-                log["file_size"] += file_size
+        # Check if file size is a digit and add to total size
+        if file_size.isdigit():
+            total_size += int(file_size)
 
-                # Update status code frequency if it's a tracked code
-                if code in log["code_frequency"]:
-                    log["code_frequency"][code] += 1
+        # Check if status code is in the allowed list and increment count
+        if status_code in status_counts:
+            status_counts[status_code] += 1
 
-                # Print statistics every 10 lines
-                if line_count % 10 == 0:
-                    output(log)
-    except KeyboardInterrupt:
-        # On manual interruption, print statistics and exit
-        output(log)
-        raise
-    finally:
-        # Ensure final output regardless of how the script exits
-        output(log)
+        # Print statistics every 10 lines
+        if line_count % 10 == 0:
+            print_stats(total_size, status_counts)
+
+except KeyboardInterrupt:
+    print_stats(total_size, status_counts)
+    raise
+
+# Print the final statistics after reading all lines
+print_stats(total_size, status_counts)
