@@ -9,8 +9,8 @@ def validUTF8(data):
     num_bytes = 0
 
     for byte in data:
-        # Get the first 8 bits of the byte
-        byte = byte & 0xFF  # Keep only the last 8 bits
+        # Keep only the last 8 bits
+        byte = byte & 0xFF
 
         if num_bytes == 0:  # We are expecting a new character
             if (byte >> 7) == 0b0:
