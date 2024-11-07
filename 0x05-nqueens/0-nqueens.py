@@ -1,50 +1,61 @@
 #!/usr/bin/python3
-""" N queens puzzle, challenge of placing N non attacking queens
-on a NxN chessboard
-This program solves the N queens problem """
-
-from sys import argv
+"""Solution to the N-Queens puzzle"""
+import sys
 
 
-def is_NQueen(cell: list) -> bool:
-    """ False if not N Queen, True if N Queen """
-    row_number = len(cell) - 1
-    difference = 0
-    for index in range(0, row_number):
-        difference = cell[index] - cell[row_number]
-        if difference < 0:
-            difference *= -1
-        if difference == 0 or difference == row_number - index:
-            return False
-    return True
+def print_board(board, n):
+    """prints allocated possitions to the queen"""
+    b = []
+
+    for i in range(n):
+        for j in range(n):
+            if j == board[i]:
+                b.append([i, j])
+    print(b)
 
 
-def solve_NQueens(dimension: int, row: int, cell: list, output: list):
-    """ Return result of N Queens recursively """
-    if row == dimension:
-        print(output)
+def safe_position(board, i, j, r):
+    """Determines whether the position is safe for the queen"""
+    if (board[i] == j) or (board[i] == j - i + r) or (board[i] == i - r + j):
+        return True
+    return False
+
+
+def determine_positions(board, row, n):
+    """Recursively finds all safe positions where the queen can be allocated"""
+    if row == n:
+        print_board(board, n)
+
     else:
-        for column in range(0, dimension):
-            cell.append(column)
-            output.append([row, column])
-            if (is_NQueen(cell)):
-                solve_NQueens(dimension, row + 1, cell, output)
-            cell.pop()
-            output.pop()
+        for j in range(n):
+            allowed = True
+            for i in range(row):
+                if safe_position(board, i, j, row):
+                    allowed = False
+            if allowed:
+                board[row] = j
+                determine_positions(board, row + 1, n)
 
 
-if len(argv) != 2:
-    print('Usage: nqueens N')
+def create_board(size):
+    """Generates the board"""
+    return [0 * size for i in range(size)]
+
+
+if len(sys.argv) != 2:
+    print("Usage: nqueens N")
     exit(1)
+
 try:
-    N = int(argv[1])
+    n = int(sys.argv[1])
 except BaseException:
-    print('N must be a number')
+    print("N must be a number")
     exit(1)
-if N < 4:
-    print('N must be at least 4')
+
+if (n < 4):
+    print("N must be at least 4")
     exit(1)
-else:
-    output = []
-    cell = 0
-    solve_NQueens(int(N), cell, [], output)
+
+board = create_board(int(n))
+row = 0
+determine_positions(board, row, int(n))
