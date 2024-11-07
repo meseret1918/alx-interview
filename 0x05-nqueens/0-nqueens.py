@@ -5,62 +5,58 @@ Solution to the N Queens problem.
 import sys
 
 
-def backtrack(r, n, cols, pos, neg, board):
+def solve_nqueens(n):
     """
-    Backtracking function to find all solutions for the N Queens problem.
+    Solves the N Queens problem and prints all solutions.
     
     Args:
-        r (int): Current row to place the queen.
-        n (int): Size of the chessboard (N x N).
-        cols (set): Set to track columns where queens are placed.
-        pos (set): Set to track positive diagonals where queens are placed.
-        neg (set): Set to track negative diagonals where queens are placed.
-        board (list): List of queen positions for the current solution.
-        
-    This function prints each solution as a list of queen coordinates.
+        n (int): Size of the chessboard and the number of queens to place.
     """
-    if r == n:
-        print(board)
-        return
+    solutions = []
+    board = []
+    cols = set()
+    pos_diags = set()  # Row + Column (positive diagonals)
+    neg_diags = set()  # Row - Column (negative diagonals)
 
-    for c in range(n):
-        # Check if the position is safe
-        if c in cols or (r + c) in pos or (r - c) in neg:
-            continue
+    def backtrack(row):
+        if row == n:
+            # Found a valid solution, add a copy to the solutions list
+            solutions.append(board[:])
+            return
 
-        # Place queen and add to tracking sets
-        cols.add(c)
-        pos.add(r + c)
-        neg.add(r - c)
-        board.append([r, c])
+        for col in range(n):
+            if col in cols or (row + col) in pos_diags or (row - col) in neg_diags:
+                continue
 
-        # Recur to place the next queen
-        backtrack(r + 1, n, cols, pos, neg, board)
+            # Place the queen
+            cols.add(col)
+            pos_diags.add(row + col)
+            neg_diags.add(row - col)
+            board.append([row, col])
 
-        # Backtrack: remove the queen and update tracking sets
-        cols.remove(c)
-        pos.remove(r + c)
-        neg.remove(r - c)
-        board.pop()
+            # Move to the next row
+            backtrack(row + 1)
 
+            # Remove the queen and backtrack
+            cols.remove(col)
+            pos_diags.remove(row + col)
+            neg_diags.remove(row - col)
+            board.pop()
 
-def nqueens(n):
-    """
-    Sets up the board and initiates the backtracking to solve the N Queens problem.
+    # Start the backtracking from the first row
+    backtrack(0)
 
-    Args:
-        n (int): The number of queens and the size of the chessboard (N x N).
-    """
-    backtrack(0, n, set(), set(), set(), [])
+    # Print all solutions
+    for solution in solutions:
+        print(solution)
 
 
 if __name__ == "__main__":
-    # Check for correct number of arguments
+    # Validate the input
     if len(sys.argv) != 2:
         print("Usage: nqueens N")
         sys.exit(1)
 
-    # Validate that N is an integer and at least 4
     try:
         n = int(sys.argv[1])
         if n < 4:
@@ -71,4 +67,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Solve the N Queens problem
-    nqueens(n)
+    solve_nqueens(n)
