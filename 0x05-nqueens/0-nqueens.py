@@ -1,52 +1,69 @@
 #!/usr/bin/python3
+"""
+Solution to the N Queens problem
+"""
 import sys
 
-def print_solutions(solutions):
-    """Prints each solution in the required format"""
-    for solution in solutions:
-        print(solution)
 
-def is_safe(board, row, col, N):
-    """Checks if it's safe to place a queen at board[row][col]"""
-    # Check this row on left side
-    for i in range(col):
-        if board[row][i] == 1:
-            return False
+def backtrack(r, n, cols, pos, neg, board):
+    """
+    Backtracking function to find all solutions for the N Queens problem.
 
-    # Check upper diagonal on left side
-    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
-        if board[i][j] == 1:
-            return False
+    Args:
+        r (int): Current row to place the queen.
+        n (int): Size of the chessboard (N x N).
+        cols (set): Set to track columns where queens are placed.
+        pos (set): Set to track positive diagonals where queens are placed.
+        neg (set): Set to track negative diagonals where queens are placed.
+        board (list): 2D list representing the chessboard.
 
-    # Check lower diagonal on left side
-    for i, j in zip(range(row, N, 1), range(col, -1, -1)):
-        if board[i][j] == 1:
-            return False
+    This function prints each solution as a list of queen coordinates.
+    """
+    if r == n:
+        # Collect and print solution when all queens are placed
+        res = []
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                if board[row][col] == 1:
+                    res.append([row, col])
+        print(res)
+        return
 
-    return True
+    for c in range(n):
+        # Check if the position is safe
+        if c in cols or (r + c) in pos or (r - c) in neg:
+            continue
 
-def solve_nqueens(N, board, col, solutions):
-    """Uses backtracking to find all solutions"""
-    if col == N:
-        solution = [[i, board[i].index(1)] for i in range(N)]
-        solutions.append(solution)
-        return True
+        # Place queen
+        cols.add(c)
+        pos.add(r + c)
+        neg.add(r - c)
+        board[r][c] = 1
 
-    res = False
-    for i in range(N):
-        if is_safe(board, i, col, N):
-            board[i][col] = 1
-            res = solve_nqueens(N, board, col + 1, solutions) or res
-            board[i][col] = 0  # Backtrack
+        # Move to the next row
+        backtrack(r + 1, n, cols, pos, neg, board)
 
-    return res
+        # Backtrack: remove the queen
+        cols.remove(c)
+        pos.remove(r + c)
+        neg.remove(r - c)
+        board[r][c] = 0
 
-def nqueens(N):
-    """Sets up the board and initiates the backtracking"""
-    board = [[0 for _ in range(N)] for _ in range(N)]
-    solutions = []
-    solve_nqueens(N, board, 0, solutions)
-    print_solutions(solutions)
+
+def nqueens(n):
+    """
+    Sets up the board and initiates the backtracking to solve the N Queens problem.
+
+    Args:
+        n (int): The number of queens and the size of the chessboard (N x N).
+    """
+    cols = set()      # Tracks columns with queens
+    pos_diag = set()  # Tracks positive diagonals with queens
+    neg_diag = set()  # Tracks negative diagonals with queens
+    board = [[0] * n for _ in range(n)]  # Initialize N x N chessboard
+
+    backtrack(0, n, cols, pos_diag, neg_diag, board)
+
 
 if __name__ == "__main__":
     # Check for correct number of arguments
@@ -54,17 +71,15 @@ if __name__ == "__main__":
         print("Usage: nqueens N")
         sys.exit(1)
 
-    # Ensure N is an integer
+    # Validate that N is a positive integer of at least 4
     try:
-        N = int(sys.argv[1])
+        n = int(sys.argv[1])
+        if n < 4:
+            print("N must be at least 4")
+            sys.exit(1)
     except ValueError:
         print("N must be a number")
         sys.exit(1)
 
-    # Ensure N is at least 4
-    if N < 4:
-        print("N must be at least 4")
-        sys.exit(1)
-
-    # Solve the N queens problem
-    nqueens(N)
+    # Solve the N Queens problem
+    nqueens(n)
