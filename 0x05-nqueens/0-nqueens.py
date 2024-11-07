@@ -1,70 +1,68 @@
 #!/usr/bin/python3
 """
-Solution to the N Queens problem.
+Solution to the nqueens problem
 """
 import sys
 
 
-def solve_nqueens(n):
+def backtrack(r, n, cols, pos, neg, board):
     """
-    Solves the N Queens problem and prints all solutions.
-    
+    backtrack function to find solution
+    """
+    if r == n:
+        res = []
+        for l in range(len(board)):
+            for k in range(len(board[l])):
+                if board[l][k] == 1:
+                    res.append([l, k])
+        print(res)
+        return
+
+    for c in range(n):
+        if c in cols or (r + c) in pos or (r - c) in neg:
+            continue
+
+        cols.add(c)
+        pos.add(r + c)
+        neg.add(r - c)
+        board[r][c] = 1
+
+        backtrack(r+1, n, cols, pos, neg, board)
+
+        cols.remove(c)
+        pos.remove(r + c)
+        neg.remove(r - c)
+        board[r][c] = 0
+
+
+def nqueens(n):
+    """
+    Solution to nqueens problem
     Args:
-        n (int): Size of the chessboard and the number of queens to place.
+        n (int): number of queens. Must be >= 4
+    Return:
+        List of lists representing coordinates of each
+        queen for all possible solutions
     """
-    solutions = []
-    board = []
     cols = set()
-    pos_diags = set()  # Row + Column (positive diagonals)
-    neg_diags = set()  # Row - Column (negative diagonals)
+    pos_diag = set()
+    neg_diag = set()
+    board = [[0] * n for i in range(n)]
 
-    def backtrack(row):
-        if row == n:
-            # Found a valid solution, add a copy to the solutions list
-            solutions.append(board[:])
-            return
-
-        for col in range(n):
-            if col in cols or (row + col) in pos_diags or (row - col) in neg_diags:
-                continue
-
-            # Place the queen
-            cols.add(col)
-            pos_diags.add(row + col)
-            neg_diags.add(row - col)
-            board.append([row, col])
-
-            # Move to the next row
-            backtrack(row + 1)
-
-            # Remove the queen and backtrack
-            cols.remove(col)
-            pos_diags.remove(row + col)
-            neg_diags.remove(row - col)
-            board.pop()
-
-    # Start the backtracking from the first row
-    backtrack(0)
-
-    # Print all solutions
-    for solution in solutions:
-        print(solution)
+    backtrack(0, n, cols, pos_diag, neg_diag, board)
 
 
 if __name__ == "__main__":
-    # Validate the input
-    if len(sys.argv) != 2:
+    n = sys.argv
+    if len(n) != 2:
         print("Usage: nqueens N")
         sys.exit(1)
-
     try:
-        n = int(sys.argv[1])
-        if n < 4:
+        nn = int(n[1])
+        if nn < 4:
             print("N must be at least 4")
             sys.exit(1)
+        nqueens(nn)
     except ValueError:
         print("N must be a number")
         sys.exit(1)
-
-    # Solve the N Queens problem
-    solve_nqueens(n)
