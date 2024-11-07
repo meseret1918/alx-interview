@@ -1,61 +1,85 @@
 #!/usr/bin/python3
-"""Solution to the N-Queens puzzle"""
+"""
+Solution to the N Queens problem
+"""
 import sys
 
 
-def print_board(board, n):
-    """prints allocated possitions to the queen"""
-    b = []
+def backtrack(r, n, cols, pos, neg, board):
+    """
+    Backtracking function to find all solutions for the N Queens problem.
 
-    for i in range(n):
-        for j in range(n):
-            if j == board[i]:
-                b.append([i, j])
-    print(b)
+    Args:
+        r (int): Current row to place the queen.
+        n (int): Size of the chessboard (N x N).
+        cols (set): Set to track columns where queens are placed.
+        pos (set): Set to track positive diagonals where queens are placed.
+        neg (set): Set to track negative diagonals where queens are placed.
+        board (list): 2D list representing the chessboard.
+
+    This function prints each solution as a list of queen coordinates.
+    """
+    if r == n:
+        # Collect and print solution when all queens are placed
+        res = []
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                if board[row][col] == 1:
+                    res.append([row, col])
+        print(res)
+        return
+
+    for c in range(n):
+        # Check if the position is safe
+        if c in cols or (r + c) in pos or (r - c) in neg:
+            continue
+
+        # Place queen
+        cols.add(c)
+        pos.add(r + c)
+        neg.add(r - c)
+        board[r][c] = 1
+
+        # Move to the next row
+        backtrack(r + 1, n, cols, pos, neg, board)
+
+        # Backtrack: remove the queen
+        cols.remove(c)
+        pos.remove(r + c)
+        neg.remove(r - c)
+        board[r][c] = 0
 
 
-def safe_position(board, i, j, r):
-    """Determines whether the position is safe for the queen"""
-    if (board[i] == j) or (board[i] == j - i + r) or (board[i] == i - r + j):
-        return True
-    return False
+def nqueens(n):
+    """
+    Sets up the board and initiates the backtracking to solve the N Queens problem.
+
+    Args:
+        n (int): The number of queens and the size of the chessboard (N x N).
+    """
+    cols = set()      # Tracks columns with queens
+    pos_diag = set()  # Tracks positive diagonals with queens
+    neg_diag = set()  # Tracks negative diagonals with queens
+    board = [[0] * n for _ in range(n)]  # Initialize N x N chessboard
+
+    backtrack(0, n, cols, pos_diag, neg_diag, board)
 
 
-def determine_positions(board, row, n):
-    """Recursively finds all safe positions where the queen can be allocated"""
-    if row == n:
-        print_board(board, n)
+if __name__ == "__main__":
+    # Check for correct number of arguments
+    if len(sys.argv) != 2:
+        print("Usage: nqueens N")
+        sys.exit(1)
 
-    else:
-        for j in range(n):
-            allowed = True
-            for i in range(row):
-                if safe_position(board, i, j, row):
-                    allowed = False
-            if allowed:
-                board[row] = j
-                determine_positions(board, row + 1, n)
+    # Validate that N is a positive integer of at least 4
+    try:
+        n = int(sys.argv[1])
+        if n < 4:
+            print("N must be at least 4")
+            sys.exit(1)
+    except ValueError:
+        print("N must be a number")
+        sys.exit(1)
 
-
-def create_board(size):
-    """Generates the board"""
-    return [0 * size for i in range(size)]
-
-
-if len(sys.argv) != 2:
-    print("Usage: nqueens N")
-    exit(1)
-
-try:
-    n = int(sys.argv[1])
-except BaseException:
-    print("N must be a number")
-    exit(1)
-
-if (n < 4):
-    print("N must be at least 4")
-    exit(1)
-
-board = create_board(int(n))
-row = 0
-determine_positions(board, row, int(n))
+    # Solve the N Queens problem
+    nqueens(n)
