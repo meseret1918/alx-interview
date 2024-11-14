@@ -11,19 +11,15 @@ request(url, (error, response, body) => {
   }
 
   const characters = JSON.parse(body).characters;
-  fetchCharactersInOrder(characters, 0);
-});
+  characters.forEach((characterUrl) => {
+    request(characterUrl, (error, response, body) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-function fetchCharactersInOrder(characters, index) {
-  if (index === characters.length) return;
-
-  request(characters[index], (error, response, body) => {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    
-    console.log(JSON.parse(body).name);
-    fetchCharactersInOrder(characters, index + 1);
+      const character = JSON.parse(body);
+      console.log(character.name);
+    });
   });
-}
+});
