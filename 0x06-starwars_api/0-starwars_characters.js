@@ -10,6 +10,7 @@ if (!movieId) {
 
 const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
 
+// Fetch the movie data
 request(apiUrl, (err, res, body) => {
   if (err) {
     console.error(err);
@@ -22,42 +23,24 @@ request(apiUrl, (err, res, body) => {
   }
 
   const movieData = JSON.parse(body);
-  const characters = movieData.characters;
+  const characterUrls = movieData.characters;
 
-  const fetchCharacter = (url, callback) => {
-    request(url, (err, res, body) => {
-      if (err) {
-        callback(err, null);
-        return;
-      }
-
-      if (res.statusCode !== 200) {
-        callback(new Error(`Failed to fetch character (status code: ${res.statusCode})`), null);
-        return;
-      }
-
-      const characterData = JSON.parse(body);
-      callback(null, characterData.name);
+  // Fetch all characters in order
+  const fetchCharacter = (url) => {
+    return new Promise((resolve, reject) => {
+      request(url, (err, res, body) => {
+        if (err) reject(err);
+        else if (res.statusCode !== 200) reject(new Error(`Failed to fetch character: ${res.statusCode}`));
+        else resolve(JSON.parse(body).name);
+      });
     });
   };
 
-  const characterNames = [];
-  let completedRequests = 0;
-
-  characters.forEach((url, index) => {
-    fetchCharacter(url, (err, name) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-
-      characterNames[index] = name;
-      completedRequests++;
-
-      if (completedRequests === characters.length) {
-        characterNames.forEach((name) => console.log(name));
-      }
+  Promise.all(characterUrls.map(fetchCharacter))
+    .then((characterNames) => {
+      characterNames.forEach((name) => console.log(name));
+    })
+    .catch((err) => {
+      console.error(err);
     });
-  });
 });
-
