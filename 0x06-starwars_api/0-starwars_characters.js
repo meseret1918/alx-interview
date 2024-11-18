@@ -1,4 +1,5 @@
 #!/usr/bin/node
+
 const request = require('request');
 
 const movieId = process.argv[2];
@@ -9,44 +10,37 @@ if (!movieId) {
 
 const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
 
+// Fetch the movie data
 request(apiUrl, (err, res, body) => {
   if (err) {
     console.error(err);
     return;
   }
 
-  try {
-    const film = JSON.parse(body);
+  if (res.statusCode !== 200) {
+    console.error(`Error: Unable to fetch movie data (status code: ${res.statusCode})`);
+    return;
+  }
 
-    if (!film.characters) {
-      console.error('Characters not found');
-      return;
-    }
+  const movieData = JSON.parse(body);
+  const characterUrls = movieData.characters;
 
-    // Fetch all character names in the order they appear in the API response
-    const characterPromises = film.characters.map((url) => {
-      return new Promise((resolve, reject) => {
-        request(url, (err, res, body) => {
-          if (err) return reject(err);
-          try {
-            const character = JSON.parse(body);
-            resolve(character.name);
-          } catch (e) {
-            reject(e);
-          }
-        });
+  // Fetch all characters in order
+  const fetchCharacter = (url) => {
+    return new Promise((resolve, reject) => {
+      request(url, (err, res, body) => {
+        if (err) reject(err);
+        else if (res.statusCode !== 200) reject(new Error(`Failed to fetch character: ${res.statusCode}`));
+        else resolve(JSON.parse(body).name);
       });
     });
+  };
 
-    Promise.all(characterPromises)
-      .then((names) => {
-        console.log(names.join('\n'));
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  } catch (e) {
-    console.error('Failed to parse API response:', e.message);
-  }
+  Promise.all(characterUrls.map(fetchCharacter))
+    .then((characterNames) => {
+      characterNames.forEach((name) => console.log(name));
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 });
-
