@@ -2,45 +2,41 @@
 
 const request = require('request');
 
-const movieId = process.argv[2];
+const movieId = process.argv[2]; // Get movie ID from command-line args
+const url = `https://swapi-api.alx-tools.com/api/films/${movieId}/`;
+
 if (!movieId) {
-  console.error('Usage: ./0-starwars_characters.js <movie_id>');
+  console.error('Please provide a movie ID.');
   process.exit(1);
 }
 
-const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
-
-// Fetch the movie data
-request(apiUrl, (err, res, body) => {
-  if (err) {
-    console.error(err);
+request(url, (error, response, body) => {
+  if (error) {
+    console.error(error);
     return;
   }
 
-  if (res.statusCode !== 200) {
-    console.error(`Error: Unable to fetch movie data (status code: ${res.statusCode})`);
-    return;
+  try {
+    const film = JSON.parse(body);
+    const characters = film.characters;
+
+    // Use Promise.all to fetch all character details concurrently
+    Promise.all(
+      characters.map((charUrl) =>
+        new Promise((resolve, reject) => {
+          request(charUrl, (err, res, charBody) => {
+            if (err) reject(err);
+            resolve(JSON.parse(charBody).name);
+          });
+        })
+      )
+    )
+      .then((names) => {
+        console.log(names.join('\n'));
+      })
+      .catch((err) => console.error('Error fetching characters:', err));
+  } catch (parseError) {
+    console.error('Error parsing response:', parseError);
   }
-
-  const movieData = JSON.parse(body);
-  const characterUrls = movieData.characters;
-
-  // Fetch all characters in order
-  const fetchCharacter = (url) => {
-    return new Promise((resolve, reject) => {
-      request(url, (err, res, body) => {
-        if (err) reject(err);
-        else if (res.statusCode !== 200) reject(new Error(`Failed to fetch character: ${res.statusCode}`));
-        else resolve(JSON.parse(body).name);
-      });
-    });
-  };
-
-  Promise.all(characterUrls.map(fetchCharacter))
-    .then((characterNames) => {
-      characterNames.forEach((name) => console.log(name));
-    })
-    .catch((err) => {
-      console.error(err);
-    });
 });
+
